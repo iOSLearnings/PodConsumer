@@ -8,15 +8,53 @@
 
 import UIKit
 import CoreData
+import Alamofire
 
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
 
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-
+    private func loadFlavors() {
+        
+        // 1
+        Alamofire.request(
+            .GET, "http://www.raywenderlich.com/downloads/Flavors.plist",
+            parameters: nil,
+            encoding: .PropertyList(.XMLFormat_v1_0, 0), headers: nil)
+            .responsePropertyList { [weak self] (_, _, result) -> Void in
+                
+                // 2
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                var flavorsArray: [[String : String]]! = nil
+                
+                // 3
+                switch result {
+                    
+                case .Success(let array):
+                    NSLog("Success - ");
+                    dump(array)
+                    if let array = array as? [[String : String]] {
+                        flavorsArray = array
+                    }
+                    
+                case .Failure(_, _):
+                    NSLog("Couldn't download flavors!")
+                    return
+                }
+                
+                // 4
+//                strongSelf.flavors = strongSelf.flavorFactory.flavorsFromDictionaryArray(flavorsArray)
+//                strongSelf.collectionView.reloadData()
+//                strongSelf.selectFirstFlavor()
+        };
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadFlavors()
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.leftBarButtonItem = self.editButtonItem()
 
